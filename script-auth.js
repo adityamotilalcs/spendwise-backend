@@ -2,7 +2,7 @@
 // This connects to the Django Backend running on port 8000
 
 // const API_URL = 'http://localhost:8000/api';  
-const API_URL = 'spendwise-backend-git-main-adityamotilalcs-projects.vercel.app/api';
+const API_URL = 'https://spendwise-backend-zeta.vercel.app/api';
 
 // Handle Registration
 async function performRegister(e) {
