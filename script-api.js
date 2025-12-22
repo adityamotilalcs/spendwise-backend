@@ -1,7 +1,7 @@
 // --- App Script (API Version) ---
 // Handles Dashboard/Home page communicating with Django Backend
 
-const API_BASE_URL = 'https://spendwise-backend-1-42pc.onrender.com/api';
+const API_BASE_URL = 'https://spendwise-backend-zeta.vercel.app/api';
 let theme = localStorage.getItem('spendwise_theme') || 'light';
 
 // Helper: Get Token
