@@ -2,7 +2,7 @@
 // This connects to the Django Backend running on port 8000
 
 // const API_URL = 'http://localhost:8000/api';  
-const API_URL = 'https://spendwise-backend-1-42pc.onrender.com'; 
+const API_URL = 'https://spendwise-backend-YOUR-ID.onrender.com/api';
 
 // Handle Registration
 async function performRegister(e) {
