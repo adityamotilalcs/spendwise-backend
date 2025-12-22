@@ -1,0 +1,191 @@
+==============================================================================
+                  SPENDWISE BACKEND SETUP INSTRUCTIONS
+==============================================================================
+
+These instructions will guide you through creating the "Brain" (Django Backend)
+for your SpendWise application on Windows.
+
+------------------------------------------------------------------------------
+PHASE 1: INSTALLATION & SETUP
+------------------------------------------------------------------------------
+
+1.  OPEN COMMAND PROMPT
+    - Open your SpendWise folder in File Explorer.
+    - Click the address bar at the top, type "cmd", and press Enter.
+
+2.  INSTALL REQUIRED TOOLS
+    Run this command to install Django and the API tools:
+    > pip install django djangorestframework django-cors-headers
+
+3.  CREATE THE PROJECT
+    Run these commands exactly as written:
+    > python -m django startproject spendwise_backend
+    > cd spendwise_backend
+    > python -m django startapp api
+
+------------------------------------------------------------------------------
+PHASE 2: PASTING THE CODE
+------------------------------------------------------------------------------
+
+You need to edit 7 specific files. Open them in Notepad or VS Code and replace
+their contents with the code blocks below.
+
+FILE 1: spendwise_backend/settings.py
+-------------------------------------
+1. Find "INSTALLED_APPS" and add these lines to the list:
+   'rest_framework',
+   'rest_framework.authtoken',
+   'corsheaders',
+   'api',
+
+2. Find "MIDDLEWARE" and add this line at the VERY TOP of the list:
+   'corsheaders.middleware.CorsMiddleware',
+
+3. Scroll to the very bottom of the file and paste this:
+   CORS_ALLOW_ALL_ORIGINS = True
+
+   REST_FRAMEWORK = {
+       'DEFAULT_AUTHENTICATION_CLASSES': [
+           'rest_framework.authentication.TokenAuthentication',
+       ],
+   }
+
+
+FILE 2: api/models.py
+---------------------
+from django.db import models
+from django.contrib.auth.models import User
+
+class Transaction(models.Model):
+    TRANSACTION_TYPES = [('income', 'Income'), ('expense', 'Expense')]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    description = models.CharField(max_length=255, blank=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateField()
+    transaction_type = models.CharField(max_length=7, choices=TRANSACTION_TYPES)
+    category = models.CharField(max_length=50)
+
+    def __str__(self):
+        return f"{self.description} - {self.amount}"
+
+
+FILE 3: api/serializers.py (Create this new file)
+--------------------------
+from rest_framework import serializers
+from django.contrib.auth.models import User
+from .models import Transaction
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'password']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        return user
+
+class TransactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Transaction
+        fields = ['id', 'description', 'amount', 'date', 'transaction_type', 'category']
+
+
+FILE 4: api/views.py
+--------------------
+from rest_framework import generics, permissions, status
+from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
+from .models import Transaction
+from .serializers import TransactionSerializer, UserSerializer
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def register_user(request):
+    serializer = UserSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class TransactionListCreate(generics.ListCreateAPIView):
+    serializer_class = TransactionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Transaction.objects.filter(user=self.request.user).order_by('-date')
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class TransactionDelete(generics.DestroyAPIView):
+    serializer_class = TransactionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Transaction.objects.filter(user=self.request.user)
+
+
+FILE 5: api/urls.py (Create this new file)
+-------------------
+from django.urls import path
+from . import views
+from rest_framework.authtoken.views import obtain_auth_token
+
+urlpatterns = [
+    path('register/', views.register_user),
+    path('login/', obtain_auth_token),
+    path('transactions/', views.TransactionListCreate.as_view()),
+    path('transactions/<int:pk>/', views.TransactionDelete.as_view()),
+]
+
+
+FILE 6: spendwise_backend/urls.py (The main urls file)
+---------------------------------
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/', include('api.urls')),
+]
+
+
+FILE 7: api/admin.py
+--------------------
+from django.contrib import admin
+from .models import Transaction
+
+admin.site.register(Transaction)
+
+
+------------------------------------------------------------------------------
+PHASE 3: LAUNCHING THE SERVER
+------------------------------------------------------------------------------
+
+1.  INITIALIZE DATABASE
+    Run these commands in your terminal (make sure you are in 'spendwise_backend'):
+    > python manage.py makemigrations
+    > python manage.py migrate
+
+2.  CREATE ADMIN USER
+    > python manage.py createsuperuser
+    (Enter username: admin, password: admin) - Password won't show while typing.
+	http://127.0.0.1:8000/admin/
+
+3.  START THE SERVER
+    > python manage.py runserver
+
+    If successful, you will see:
+    "Starting development server at http://127.0.0.1:8000/"
+
+------------------------------------------------------------------------------
+PHASE 4: CONNECTING THE FRONTEND
+------------------------------------------------------------------------------
+
+1.  Make sure your 'home.html' uses: <script src="script-api.js"></script>
+2.  Make sure your 'signin.html' uses: <script src="script-auth.js"></script>
+3.  Open 'signin.html' in your browser.
+4.  If you have old data errors, open Console (F12) and type: localStorage.clear()
+5.  Register a new user and Login!

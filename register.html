@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpendWise - Register</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="login-mode">
+
+    <!-- =========================================
+         REGISTER PAGE
+         ========================================= -->
+    <div class="login-wrapper active" id="login-section">
+        <div class="container">
+            <h1 class="app-title">SpendWise</h1>
+
+            <!-- Register Form -->
+            <div class="form-container" id="register-container">
+                <h2>Register</h2>
+                <form id="form-register" onsubmit="performRegister(event); return false;">
+                    <input type="text" id="reg-name" placeholder="Full Name" required>
+                    <input type="email" id="reg-email" placeholder="Email" required>
+                    <input type="password" id="reg-pass" placeholder="Password" required>
+                    <button type="submit" class="submit-btn">Register</button>
+                </form>
+                <p>Already have an account? <a href="signin.html">Sign In</a></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="auth-debug" style="text-align:center;color:#fff;background:rgba(0,0,0,0.08);padding:6px;margin-top:12px;display:none;">
+        Debug: JS not loaded
+    </div>
+
+    <!-- JavaScript -->
+    <script src="script-auth.js"></script>
+</body>
+</html>

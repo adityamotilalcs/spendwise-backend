@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpendWise - Expense Manager</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="app-mode">
+
+    <!-- =========================================
+         DASHBOARD / HOME PAGE
+         ========================================= -->
+    <div id="app-wrapper" class="active">
+        <nav class="sidebar">
+            <div class="logo-area">
+                <i data-lucide="wallet"></i>
+                <span>SpendWise</span>
+            </div>
+            <div class="nav-item active" onclick="switchTab('dashboard')">
+                <i data-lucide="layout-dashboard"></i>
+                <span>Dashboard</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('reports')">
+                <i data-lucide="pie-chart"></i>
+                <span>Reports</span>
+            </div>
+            <div class="tip-box">
+                <strong>💡 Tip:</strong> <span id="tip-text">Save more!</span>
+            </div>
+            <div class="nav-item logout-item" onclick="logout()">
+                <i data-lucide="log-out"></i>
+                <span>Logout</span>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <header class="header-section">
+                <div>
+                    <h2 id="greeting">Welcome Back</h2>
+                    <p class="date-text" id="current-date">Date</p>
+                </div>
+                <div class="btn-area">
+                    <button onclick="window.print()" class="btn-print">
+                        Download PDF
+                    </button>
+                        <button onclick="toggleTheme()" class="btn-theme" aria-label="Toggle theme">
+                            <span class="theme-icon">🌙</span>
+                            <span class="theme-label">Light mode</span>
+                        </button>
+                </div>
+            </header>
+
+            <section id="dashboard-view" class="view-section active">
+                <div class="stats-grid">
+                    <div class="card stat-card">
+                        <h3>Total Balance</h3>
+                        <div class="value" id="total-balance">₹0.00</div>
+                    </div>
+                    <div class="card stat-card">
+                        <h3>Income</h3>
+                        <div class="value income-value" id="total-income">₹0.00</div>
+                    </div>
+                    <div class="card stat-card">
+                        <h3>Expenses</h3>
+                        <div class="value expense-value" id="total-expense">₹0.00</div>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <div class="card">
+                        <h3>Transactions</h3>
+                        <div id="transaction-list" class="transaction-list-container"></div>
+                    </div>
+                    <div class="card add-form">
+                        <h3>Add New</h3>
+                        <form id="form-add-transaction">
+                            <label>Description</label>
+                            <input type="text" id="t-desc" class="app-input" placeholder="Description (optional)">
+                            <label>Amount (₹)</label>
+                            <input type="number" id="t-amount" class="app-input" step="0.01" required>
+                            <label>Date</label>
+                            <input type="date" id="t-date" class="app-input" required>
+                            <label>Type</label>
+                            <select id="t-type" class="app-select" required>
+                                <option value="expense">Expense</option>
+                                <option value="income">Income</option>
+                            </select>
+                            <div id="category-group">
+                                <label>Category</label>
+                                <select id="t-category" class="app-select" required>
+                                    <option value="Food">Food</option>
+                                    <option value="Travel">Travel</option>
+                                    <option value="Bills">Bills</option>
+                                    <option value="Shopping">Shopping</option>
+                                    <option value="Others">Others</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="submit-btn">Add</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <section id="reports-view" class="view-section">
+                <div class="card">
+                    <h3>Spending Breakdown</h3>
+                    <div id="category-bars" class="category-bars-container"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="script-api.js"></script>
+</body>
+</html>
