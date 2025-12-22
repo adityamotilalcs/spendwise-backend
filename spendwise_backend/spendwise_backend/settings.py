@@ -103,4 +103,4 @@ REST_FRAMEWORK = {
 # 3. Allow cookies/auth headers? (Often needed for login/register)
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ORIGIN_ALLOW_ALL = True
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
