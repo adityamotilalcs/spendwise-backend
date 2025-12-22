@@ -31,7 +31,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # MOVED TO TOP: Best practice for CORS
+    'corsheaders.middleware.CorsMiddleware',  # <--- MUST BE AT THE TOP
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -100,20 +100,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
 }
-
-# --- CORS & CSRF CONFIGURATION (CRITICAL FIXES) ---
-
-# 1. Who can connect? (Netlify)
-CORS_ALLOWED_ORIGINS = [
-    "https://bright-salmiakki-ce6b5c.netlify.app",
-    "https://amazing-quokka-ac2e57.netlify.app",
-]
-
-# 2. Who can send POST requests? (Required for Django 4.0+)
-CSRF_TRUSTED_ORIGINS = [
-    "https://bright-salmiakki-ce6b5c.netlify.app",
-    "https://amazing-quokka-ac2e57.netlify.app",
-]
-
 # 3. Allow cookies/auth headers? (Often needed for login/register)
-CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ORIGIN_ALLOW_ALL = True
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
