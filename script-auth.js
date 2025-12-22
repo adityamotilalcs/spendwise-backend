@@ -54,7 +54,7 @@ async function performLogin(e) {
         if (response.ok) {
             const data = await response.json();
             // SAVE THE TOKEN! This is your key to the backend.
-            localStorage.setItem('auth_token', data.token);
+            localStorage.setItem('auth_token', data.access);
             // Optionally save the name/email for display
             localStorage.setItem('user_name', email);
             
