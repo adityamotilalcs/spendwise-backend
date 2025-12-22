@@ -1,7 +1,7 @@
 // --- App Script (API Version) ---
 // Handles Dashboard/Home page communicating with Django Backend
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = 'https://spendwise-backend-YOUR-UNIQUE-ID.onrender.com/api';
 let theme = localStorage.getItem('spendwise_theme') || 'light';
 
 // Helper: Get Token
