@@ -1,61 +1,66 @@
-// --- App Script (API Version) ---
-// Handles Dashboard/Home page communicating with Django Backend
+// --- App Script (Connected to Live Backend) ---
+// Handles Dashboard/Home page logic
 
+// ✅ BACKEND URL (Points to your live server)
 const API_BASE_URL = 'https://spendwise-backend-zeta.vercel.app/api';
-let theme = localStorage.getItem('spendwise_theme') || 'light';
 
-// Helper: Get Token
+// --- Helper Functions ---
 function getAuthToken() {
     return localStorage.getItem('auth_token');
 }
 
+function getUserName() {
+    return localStorage.getItem('user_name') || 'User';
+}
+
+function getTheme() {
+    return localStorage.getItem('spendwise_theme') || 'light';
+}
+
+// Global variable for UI rendering
+let transactions = [];
+
 // --- Initialization ---
 window.addEventListener('load', function() {
-    console.log("Home page loaded (API Mode)");
+    console.log("Home page loaded (Online Mode)");
     
-    // 1. Auth Check: Redirect to signin if no token found
+    // 1. Check Login
     const token = getAuthToken();
     if (!token) {
         window.location.href = 'signin.html';
         return;
     }
 
-    try { lucide.createIcons(); } catch(e) { console.warn('Lucide icons not loaded'); }
-
     // 2. Setup UI
-    applyTheme(theme);
+    try { lucide.createIcons(); } catch(e) {}
+    applyTheme(getTheme());
     rotateTip();
     setupForms();
-    
-    // 3. Set User Name (Optional: Fetch this from an API endpoint '/api/user/' if you expand backend)
-    // For now, we use the stored name or default
-    const storedName = localStorage.getItem('user_name');
-    const greetingEl = document.getElementById('greeting');
-    if (greetingEl) greetingEl.innerText = `Hello, ${storedName || 'User'}!`;
 
-    // 4. Initial Data Load
+    // 3. Set Greeting
+    const greetingEl = document.getElementById('greeting');
+    if (greetingEl) greetingEl.innerText = `Hello, ${getUserName()}!`;
+
+    // 4. Load Data from Backend
     fetchTransactions();
 });
 
 function setupForms() {
-    // Transaction Form
     const addTransactionForm = document.getElementById('form-add-transaction');
     if (addTransactionForm) {
         addTransactionForm.addEventListener('submit', addTransaction);
     }
 
-    // Date Default
     const dateInput = document.getElementById('t-date');
     if (dateInput) dateInput.valueAsDate = new Date();
 
-    // Category Toggle
     const typeSelect = document.getElementById('t-type');
     if (typeSelect) {
         typeSelect.addEventListener('change', toggleCategoryInput);
         toggleCategoryInput();
     }
 
-    // Current Date Display
+    // Display Current Date
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     const currentDateEl = document.getElementById('current-date');
     if (currentDateEl) {
@@ -63,7 +68,7 @@ function setupForms() {
     }
 }
 
-// --- API Interactions ---
+// --- API Calls ---
 
 // 1. GET Transactions
 async function fetchTransactions() {
@@ -78,19 +83,19 @@ async function fetchTransactions() {
 
         if (response.ok) {
             const data = await response.json();
-            updateUI(data);
+            transactions = data; // Update global variable
+            updateUI();
         } else if (response.status === 401) {
-            // Token expired or invalid
-            logout();
+            logout(); // Token invalid/expired
         } else {
             console.error('Failed to fetch transactions');
         }
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Network Error:', error);
     }
 }
 
-// 2. POST Transaction
+// 2. POST Transaction (Add)
 async function addTransaction(e) {
     e.preventDefault();
     
@@ -106,12 +111,12 @@ async function addTransaction(e) {
 
     const category = (type === 'expense') ? document.getElementById('t-category').value : 'Income';
 
-    // Construct payload matching Django Serializer fields
+    // Matches Django Serializer fields
     const payload = {
         description: desc,
         amount: parseFloat(amount),
         date: date,
-        transaction_type: type, 
+        transaction_type: type,
         category: category
     };
 
@@ -126,29 +131,32 @@ async function addTransaction(e) {
         });
 
         if (response.ok) {
-            // Reset Form
+            alert("Transaction added successfully!");
+            
+            // Clear Form
             document.getElementById('t-desc').value = '';
             document.getElementById('t-amount').value = '';
             document.getElementById('t-date').valueAsDate = new Date();
             document.getElementById('t-type').value = 'expense';
             toggleCategoryInput();
 
-            alert("Transaction added!");
-            fetchTransactions(); // Refresh list
+            // Refresh List
+            fetchTransactions();
         } else {
             const err = await response.json();
-            alert("Error adding transaction: " + JSON.stringify(err));
+            alert("Error: " + JSON.stringify(err));
         }
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error adding transaction:', error);
+        alert("Network error. Please try again.");
     }
 }
 
 // 3. DELETE Transaction
 async function deleteTransaction(id) {
-    if (!confirm("Delete this transaction?")) return;
+    if (!confirm("Are you sure you want to delete this transaction?")) return;
 
-    // UI Optimistic update (remove immediately for smoothness)
+    // Optimistic UI Update (Fade out)
     const el = document.querySelector(`.transaction-item[data-id="${id}"]`);
     if (el) el.style.opacity = '0.5';
 
@@ -161,20 +169,22 @@ async function deleteTransaction(id) {
         });
 
         if (response.ok) {
-            fetchTransactions();
+            // Remove from local list and UI without full refresh
+            transactions = transactions.filter(t => t.id !== id);
+            updateUI();
         } else {
             alert("Failed to delete transaction.");
             if (el) el.style.opacity = '1';
         }
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Delete Error:', error);
         if (el) el.style.opacity = '1';
     }
 }
 
-// --- UI Logic (Preserved from original) ---
+// --- UI Logic ---
 
-function updateUI(transactions) {
+function updateUI() {
     const list = document.getElementById('transaction-list');
     const bars = document.getElementById('category-bars');
     
@@ -185,13 +195,11 @@ function updateUI(transactions) {
     
     let inc = 0, exp = 0, cats = {};
     
-    // Django returns date as YYYY-MM-DD string, sort by date desc
+    // Sort transactions by date (Newest first)
+    // Django sends date as YYYY-MM-DD
     const sorted = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
     
     sorted.forEach(t => {
-        // Map API fields to UI variables
-        // API: transaction_type | UI logic: type
-        // API: description | UI logic: desc
         const tType = t.transaction_type; 
         const tAmt = parseFloat(t.amount);
 
@@ -226,15 +234,15 @@ function updateUI(transactions) {
     });
 
     if (sorted.length === 0) {
-        list.innerHTML = "<p class='muted' style='text-align:center'>No transactions found.</p>";
+        list.innerHTML = "<p class='muted' style='text-align:center; padding: 20px;'>No transactions yet.</p>";
     }
 
-    // Update Stats
+    // Update Dashboard Counters
     animateNumber(document.getElementById('total-balance'), (inc - exp));
     animateNumber(document.getElementById('total-income'), inc);
     animateNumber(document.getElementById('total-expense'), exp);
 
-    // Update Bars
+    // Update Category Progress Bars
     for (let c in cats) {
         const pct = (cats[c] / exp) * 100;
         const barDiv = document.createElement('div');
@@ -251,6 +259,8 @@ function updateUI(transactions) {
         bars.appendChild(barDiv);
     }
 }
+
+// --- Helpers ---
 
 function logout() {
     localStorage.removeItem('auth_token');
@@ -297,33 +307,21 @@ function animateNumber(element, value) {
     requestAnimationFrame(step);
 }
 
-function switchTab(tab) {
-    document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
-    const target = document.getElementById(`${tab}-view`);
-    if (target) target.classList.add('active');
-    
-    const navItems = document.querySelectorAll('.nav-item');
-    navItems.forEach(n => n.classList.remove('active'));
-    
-    // Hardcoded check based on original HTML structure
-    if (tab === 'dashboard') navItems[0].classList.add('active');
-    if (tab === 'reports') navItems[1].classList.add('active');
-}
-
+// Theme & Tips
 function toggleTheme() {
-    theme = theme === 'light' ? 'dark' : 'light';
-    localStorage.setItem('spendwise_theme', theme);
-    applyTheme(theme);
+    let t = getTheme() === 'light' ? 'dark' : 'light';
+    localStorage.setItem('spendwise_theme', t);
+    applyTheme(t);
 }
 
 function applyTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
-    // Button icon update logic...
     const btn = document.querySelector('.btn-theme');
     if (btn) {
         const icon = btn.querySelector('.theme-icon');
         const label = btn.querySelector('.theme-label');
         if (icon && label) {
+            // Simplified icon switch
             icon.textContent = t === 'dark' ? '🌙' : '☀️';
             label.textContent = t === 'dark' ? 'Dark Mode' : 'Light Mode';
         }
@@ -334,7 +332,7 @@ const tips = [
     "Use the 50/30/20 rule: 50% Needs, 30% Wants, 20% Savings.",
     "Avoid impulse buying: Wait 24 hours before big purchases.",
     "Track small expenses—they add up quickly!",
-    "Cancel unused subscriptions to save ₹500+ a month."
+    "Cancel unused subscriptions to save money."
 ];
 
 function rotateTip() {
@@ -345,4 +343,17 @@ function rotateTip() {
             el.innerText = tips[Math.floor(Math.random() * tips.length)];
         }, 10000);
     }
+}
+
+// Tab Switching
+function switchTab(tab) {
+    document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
+    const target = document.getElementById(`${tab}-view`);
+    if (target) target.classList.add('active');
+    
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(n => n.classList.remove('active'));
+    
+    if (tab === 'dashboard') navItems[0].classList.add('active');
+    if (tab === 'reports') navItems[1].classList.add('active');
 }
