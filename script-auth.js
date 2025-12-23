@@ -1,41 +1,44 @@
-// --- Authentication Script ---
+// --- script-auth.js (Debug Version) ---
 const API_AUTH_URL = 'https://spendwise-backend-zeta.vercel.app/api';
 
-// Wait for DOM to load so we find elements correctly
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. Find the Form
+    const loginForm = document.getElementById('form-login'); 
     
-    // 1. Setup Login Form
-    const loginForm = document.getElementById('form-login'); // ✅ Matches your HTML ID
     if (loginForm) {
-        // Remove the inline onsubmit to prevent conflicts
+        // Remove HTML-side interference
         loginForm.removeAttribute('onsubmit'); 
-        loginForm.addEventListener('submit', performLogin);
-    }
-
-    // 2. Setup Register Form (Assuming standard IDs for register page)
-    const registerForm = document.getElementById('register-form');
-    if (registerForm) {
-        registerForm.addEventListener('submit', performRegister);
+        
+        // Attach the listener safely
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); // STOP page reload
+            console.log("Form submitted via JS listener");
+            await performLogin();
+        });
+    } else {
+        console.error("ERROR: Could not find form with id 'form-login'");
     }
 });
 
-// --- Login Function ---
-async function performLogin(e) {
-    e.preventDefault(); // Stop page reload
-
+async function performLogin() {
     const submitBtn = document.querySelector('.submit-btn');
-    const emailInput = document.getElementById('login-email'); // ✅ Matches your HTML ID
-    const passInput = document.getElementById('login-pass');   // ✅ Matches your HTML ID
+    const emailInput = document.getElementById('login-email');
+    const passInput = document.getElementById('login-pass');
+
+    // Debug: Check if inputs exist
+    if (!emailInput || !passInput) {
+        alert("Error: Could not find email or password inputs in HTML.");
+        return;
+    }
 
     const username = emailInput.value.trim();
     const password = passInput.value;
 
     try {
-        if(submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.innerText = "Signing in...";
-        }
+        if(submitBtn) submitBtn.innerText = "Connecting...";
 
+        console.log("Sending request to:", `${API_AUTH_URL}/login/`);
+        
         const response = await fetch(`${API_AUTH_URL}/login/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -43,28 +46,33 @@ async function performLogin(e) {
         });
 
         const data = await response.json();
+        console.log("Server Response:", data);
 
         if (response.ok) {
-            // ✅ Save token with the correct name for the dashboard to find
-            localStorage.setItem('auth_token', data.token);
-            localStorage.setItem('user_name', username);
-            window.location.href = 'index.html';
+            // ✅ SUCCESS
+            if (data.token) {
+                // Save it
+                localStorage.setItem('auth_token', data.token);
+                localStorage.setItem('user_name', username);
+                
+                // Verify it saved
+                if (localStorage.getItem('auth_token')) {
+                    alert("Login Successful! Token saved. Redirecting...");
+                    window.location.href = 'index.html';
+                } else {
+                    alert("Error: Browser refused to save LocalStorage.");
+                }
+            } else {
+                alert("Login worked, but server sent no token: " + JSON.stringify(data));
+            }
         } else {
-            alert(data.error || "Login failed. Check your credentials.");
+            // ❌ FAILURE
+            alert("Login Failed: " + (data.error || "Check credentials"));
         }
     } catch (error) {
         console.error('Login Error:', error);
-        alert("Network error. Please try again.");
+        alert("Network Error: " + error.message);
     } finally {
-        if(submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.innerText = "Sign In";
-        }
+        if(submitBtn) submitBtn.innerText = "Sign In";
     }
-}
-
-// --- Register Function ---
-async function performRegister(e) {
-    e.preventDefault();
-    // ... (Your register logic here, ensure IDs match register.html)
 }
