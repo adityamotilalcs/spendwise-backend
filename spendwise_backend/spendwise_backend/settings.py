@@ -28,7 +28,8 @@ INSTALLED_APPS = [
     # Your apps
     'corsheaders',
     'rest_framework',
-    'rest_framework_simplejwt',  # <--- MAKE SURE THIS IS HERE
+    'rest_framework.authtoken',  # <--- ADD THIS LINE HERE
+    'rest_framework_simplejwt',
     'api',
 ]
 
@@ -105,4 +106,10 @@ REST_FRAMEWORK = {
 # 3. Allow cookies/auth headers? (Often needed for login/register)
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ORIGIN_ALLOW_ALL = True
+# --- FIX FOR DJONGO + DRF TOKEN ERROR ---
+from rest_framework.authtoken.models import Token
+from django.db import models
+
+# Force the Token model to have a Manager
+Token.objects = models.Manager()
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
