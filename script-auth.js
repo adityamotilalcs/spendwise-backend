@@ -1,4 +1,4 @@
-// --- script-auth.js (Debug Version) ---
+// --- script-auth.js ---
 const API_AUTH_URL = 'https://spendwise-backend-zeta.vercel.app/api';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -44,19 +44,26 @@ async function performLogin() {
         });
 
         const data = await response.json();
-        console.log("Server Response:", data); // Check console to see if token is here
+        console.log("Server Response:", data); // Expand this in console to check!
 
         if (response.ok) {
-            // ✅ SUCCESS: Save & Redirect Immediately
-            // We removed the alert() to make it faster and smoother
-            localStorage.setItem('auth_token', data.token);
-            localStorage.setItem('user_name', username);
-            
-            console.log("Token saved. Redirecting to index.html...");
-            window.location.href = 'index.html';
+            // ✅ FIX: Check for 'token' OR 'key' OR 'access'
+            const serverToken = data.token || data.key || data.access;
+
+            if (serverToken) {
+                // Save exactly as 'auth_token' for the dashboard script
+                localStorage.setItem('auth_token', serverToken);
+                localStorage.setItem('user_name', username);
+                
+                console.log("Token found:", serverToken);
+                window.location.href = 'index.html';
+            } else {
+                alert("Login successful, but token is missing from server response!");
+                console.error("Missing token in data:", data);
+            }
         } else {
-            // ❌ FAILURE
-            alert("Login Failed: " + (data.error || "Check credentials"));
+            // ❌ Handle Login Failure (Wrong password, etc.)
+            alert("Login Failed: " + (data.error || "Check your email/password"));
         }
     } catch (error) {
         console.error('Login Error:', error);
