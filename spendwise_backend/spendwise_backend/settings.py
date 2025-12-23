@@ -15,7 +15,7 @@ SECRET_KEY = 'django-insecure-opd=9g32=9%u6j&58e2899whj^#=&99^)gxe(mfti=ffc7v+82
 DEBUG = True
 
 # Render requires '*' or the specific Render URL here
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['.vercel.app', 'now.sh', '127.0.0.1', 'localhost']
 
 # Application definition
 INSTALLED_APPS = [
