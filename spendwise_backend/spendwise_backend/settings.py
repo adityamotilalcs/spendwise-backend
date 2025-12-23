@@ -126,7 +126,4 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
-# --- FIX FOR DJONGO + DRF TOKEN ERROR ---
-from rest_framework.authtoken.models import Token
-from django.db import models
 
