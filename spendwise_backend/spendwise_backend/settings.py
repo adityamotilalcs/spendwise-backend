@@ -28,7 +28,7 @@ INSTALLED_APPS = [
     # Your apps
     'corsheaders',
     'rest_framework',
-    'rest_framework.authtoken',  # <--- ADD THIS LINE HERE
+    'rest_framework.authtoken',  # Required for Token Login
     'rest_framework_simplejwt',
     'api',
 ]
@@ -103,13 +103,32 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
 }
-# 3. Allow cookies/auth headers? (Often needed for login/register)
+
+# --- CORS SETTINGS (UPDATED) ---
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "https://spendwise-frontend-tau.vercel.app",  # Your Frontend
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
 # --- FIX FOR DJONGO + DRF TOKEN ERROR ---
 from rest_framework.authtoken.models import Token
 from django.db import models
 
 # Force the Token model to have a Manager
 Token.objects = models.Manager()
-DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
