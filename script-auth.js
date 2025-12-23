@@ -25,9 +25,9 @@ async function performLogin() {
     const emailInput = document.getElementById('login-email');
     const passInput = document.getElementById('login-pass');
 
-    // Debug: Check if inputs exist
+    // Safety check
     if (!emailInput || !passInput) {
-        alert("Error: Could not find email or password inputs in HTML.");
+        console.error("Inputs not found!");
         return;
     }
 
@@ -37,8 +37,6 @@ async function performLogin() {
     try {
         if(submitBtn) submitBtn.innerText = "Connecting...";
 
-        console.log("Sending request to:", `${API_AUTH_URL}/login/`);
-        
         const response = await fetch(`${API_AUTH_URL}/login/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -46,25 +44,16 @@ async function performLogin() {
         });
 
         const data = await response.json();
-        console.log("Server Response:", data);
+        console.log("Server Response:", data); // Check console to see if token is here
 
         if (response.ok) {
-            // ✅ SUCCESS
-            if (data.token) {
-                // Save it
-                localStorage.setItem('auth_token', data.token);
-                localStorage.setItem('user_name', username);
-                
-                // Verify it saved
-                if (localStorage.getItem('auth_token')) {
-                    alert("Login Successful! Token saved. Redirecting...");
-                    window.location.href = 'index.html';
-                } else {
-                    alert("Error: Browser refused to save LocalStorage.");
-                }
-            } else {
-                alert("Login worked, but server sent no token: " + JSON.stringify(data));
-            }
+            // ✅ SUCCESS: Save & Redirect Immediately
+            // We removed the alert() to make it faster and smoother
+            localStorage.setItem('auth_token', data.token);
+            localStorage.setItem('user_name', username);
+            
+            console.log("Token saved. Redirecting to index.html...");
+            window.location.href = 'index.html';
         } else {
             // ❌ FAILURE
             alert("Login Failed: " + (data.error || "Check credentials"));
