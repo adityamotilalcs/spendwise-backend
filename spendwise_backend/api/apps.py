@@ -10,7 +10,10 @@ class ApiConfig(AppConfig):
         try:
             from rest_framework.authtoken.models import Token
             from django.db import models
-            # Force the Token model to have a Manager
-            Token.objects = models.Manager()
+            
+            # FIX: Use 'add_to_class' instead of direct assignment.
+            # This ensures the Manager knows it belongs to the Token model.
+            Token.add_to_class('objects', models.Manager())
+            
         except ImportError:
             pass
