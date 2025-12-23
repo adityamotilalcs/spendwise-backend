@@ -130,5 +130,3 @@ CORS_ALLOW_HEADERS = [
 from rest_framework.authtoken.models import Token
 from django.db import models
 
-# Force the Token model to have a Manager
-Token.objects = models.Manager()
