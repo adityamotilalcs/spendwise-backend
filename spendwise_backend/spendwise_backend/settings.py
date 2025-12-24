@@ -98,8 +98,14 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # --- REST FRAMEWORK ---
+# spendwise_backend/settings.py
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        # Add this line for JWTs:
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        
+        # Keep this for standard tokens (just in case):
         'rest_framework.authentication.TokenAuthentication',
     ],
 }
