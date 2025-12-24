@@ -1,17 +1,13 @@
+# api/urls.py
 from django.urls import path
-from . import views
-from rest_framework_simplejwt.views import TokenRefreshView
+from .views import register_user, LoginView, TransactionListCreate, TransactionDelete # <--- Import LoginView
 
 urlpatterns = [
-    # Auth Endpoints
-    path('register/', views.register_user, name='register'),
+    path('register/', register_user, name='register'),
     
-    # IMPORTANT: This line uses your new custom view to fix the Login crash
-    path('login/', views.MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # ✅ CHANGE THIS LINE:
+    path('login/', LoginView.as_view(), name='login'), 
     
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-
-    # Transaction Endpoints
-    path('transactions/', views.TransactionListCreate.as_view(), name='transaction-list-create'),
-    path('transactions/delete/<int:pk>/', views.TransactionDelete.as_view(), name='delete-transaction'),
+    path('transactions/', TransactionListCreate.as_view(), name='transactions'),
+    path('transactions/<int:pk>/', TransactionDelete.as_view(), name='delete-transaction'),
 ]
