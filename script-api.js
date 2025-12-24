@@ -76,7 +76,7 @@ async function fetchTransactions() {
         const response = await fetch(`${API_BASE_URL}/transactions/`, {
             method: 'GET',
             headers: {
-                'Authorization': `Token ${getAuthToken()}`,
+                'Authorization': `Bearer ${getAuthToken()}`,
                 'Content-Type': 'application/json'
             }
         });
