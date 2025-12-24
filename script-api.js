@@ -76,7 +76,8 @@ async function fetchTransactions() {
         const response = await fetch(`${API_BASE_URL}/transactions/`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${getAuthToken()}`,
+                // ✅ FIXED: Changed 'Bearer' to 'Token' to match your Backend
+                'Authorization': `Token ${getAuthToken()}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -86,7 +87,9 @@ async function fetchTransactions() {
             transactions = data; // Update global variable
             updateUI();
         } else if (response.status === 401) {
-            logout(); // Token invalid/expired
+            // Only logout if token is truly invalid
+            console.error("Token rejected (401). Redirecting to login.");
+            logout(); 
         } else {
             console.error('Failed to fetch transactions');
         }
@@ -124,6 +127,7 @@ async function addTransaction(e) {
         const response = await fetch(`${API_BASE_URL}/transactions/`, {
             method: 'POST',
             headers: {
+                // ✅ CORRECT: Already using 'Token'
                 'Authorization': `Token ${getAuthToken()}`,
                 'Content-Type': 'application/json'
             },
@@ -164,6 +168,7 @@ async function deleteTransaction(id) {
         const response = await fetch(`${API_BASE_URL}/transactions/${id}/`, {
             method: 'DELETE',
             headers: {
+                // ✅ CORRECT: Already using 'Token'
                 'Authorization': `Token ${getAuthToken()}`
             }
         });
