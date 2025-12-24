@@ -1,7 +1,7 @@
 """
 Django settings for spendwise_backend project.
 """
-
+from datetime import timedelta
 from pathlib import Path
 import os
 
@@ -131,5 +131,12 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
-
+# --- JWT SETTINGS (Make tokens last 1 day) ---
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
 
